@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            margin: 50px auto;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .switch {
+            margin-top: 10px;
+            color: blue;
+            cursor: pointer;
+        }
+        .switch:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Assignment 4</h1>
+    <p>This is an example for the introduction of web services using databases.</p>
+
+    <!-- Login Form -->
+    <div id="login-form" class="container">
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <p class="switch" onclick="showForgotPassword()">Forgot Password?</p>
+        <p class="switch" onclick="showSignup()">Don't have an account? Sign Up</p>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signup-form" class="container" style="display: none;">
+        <h2>Sign Up</h2>
+        <input type="text" id="signup-name" placeholder="Full Name" required>
+        <input type="email" id="signup-google" placeholder="Google Account (Email)" required>
+        <input type="text" id="signup-phone" placeholder="Phone Number" required>
+        <input type="text" id="signup-username" placeholder="Username" required>
+        <input type="password" id="signup-password" placeholder="Password" required>
+        <button onclick="signup()">Sign Up</button>
+        <p class="switch" onclick="showLogin()">Already have an account? Login</p>
+    </div>
+
+    <!-- Forgot Password Form -->
+    <div id="forgot-password-form" class="container" style="display: none;">
+        <h2>Forgot Password</h2>
+        <input type="text" id="forgot-username" placeholder="Enter your Username" required>
+        <button onclick="resetPassword()">Reset Password</button>
+        <p class="switch" onclick="showLogin()">Back to Login</p>
+    </div>
+
+    <script>
+        function showSignup() {
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("signup-form").style.display = "block";
+            document.getElementById("forgot-password-form").style.display = "none";
+        }
+
+        function showLogin() {
+            document.getElementById("login-form").style.display = "block";
+            document.getElementById("signup-form").style.display = "none";
+            document.getElementById("forgot-password-form").style.display = "none";
+        }
+
+        function showForgotPassword() {
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("signup-form").style.display = "none";
+            document.getElementById("forgot-password-form").style.display = "block";
+        }
+
+        function login() {
+            let username = document.getElementById("login-username").value;
+            let password = document.getElementById("login-password").value;
+
+            if (username === "" || password === "") {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            // Get the IP or domain dynamically
+            let serverURL = window.location.origin + "/login";
+
+            fetch(serverURL, {  
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    username: username, 
+                    password: password 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response Data:", data);
+                if (data.success) {
+                    alert("Login Successful!");
+                    if(data.Admin){
+                        window.location.href = `/admin?password=${data.password}`;
+                    }
+                    else if(data.Monitor){
+                        window.location.href = `/home?id=${data.id}&monitor=${true}`;
+                    }
+                    else{
+                        window.location.href = `/home?id=${data.id}`;
+                    }  
+                } else {
+                    alert("Error: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Something went wrong!");
+            });
+        }
+
+
+        function signup() {
+            let name = document.getElementById("signup-name").value;
+            let google = document.getElementById("signup-google").value;
+            let phone = document.getElementById("signup-phone").value;
+            let username = document.getElementById("signup-username").value;
+            let password = document.getElementById("signup-password").value;
+
+            if (name === "" || google === "" || phone === "" || username === "" || password === "") {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            alert("Sign up successful for " + username);
+            // Here you can send a request to Flask to store user data
+        }
+
+        function resetPassword() {
+            let username = document.getElementById("forgot-username").value;
+
+            if (username === "") {
+                alert("Please enter your username or phone number.");
+                return;
+            }
+
+            alert("A password reset link has been sent to " + username);
+            // Here you can integrate with Flask to handle password reset
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Service Requests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            padding: 10px;
+            justify-content: space-between;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1001; /* Highest priority */
+        }
+
+        .top-navbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .top-navbar button:hover {
+            background-color: #575757;
+            border-radius: 5px;
+        }
+
+        #logout {
+            background-color: red;
+            margin: 0px 20px;
+            padding: 14px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            left: -250px; /* Initially hidden */
+            top: 0;
+            padding-top: 60px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000; /* Lower than navbar but above content */
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        /* When sidebar is open */
+        .sidebar.open {
+            left: 0;
+        }
+
+        /* Overlay Effect */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .main-content { margin-top: 60px; padding: 20px; }
+        .form-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); width: 50%; margin: 20px auto; }
+        label { font-weight: bold; display: block; margin: 10px 0 5px; }
+        select, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #218838; } 
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #007bff; color: white; }
+        tr:hover { background: #f1f1f1; }
+    </style>
+    <script>
+        let userId;
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            userId = params.get("id");
+
+            if (userId) {
+                document.getElementById("home").href = `/home?id=${userId}`;
+                document.getElementById("profile").href = `/profile?id=${userId}`;
+                document.getElementById("schemes").href = `/schemes?id=${userId}`;
+                document.getElementById("services").href = `/services?id=${userId}`;
+                document.getElementById("agri").href = `/agrirecords?id=${userId}`;
+                loadRequests();
+            }
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            }
+        }
+    
+        function closeSidebar() {
+            document.querySelector('.sidebar').classList.remove('open');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+        
+        function loadRequests() {
+            fetch(`/api/citizenrequests?citizenid=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const table = document.getElementById("requestsTable");
+                    table.innerHTML = ""; 
+
+                    if (data.length === 0) {
+                        table.innerHTML = `<tr><td colspan="4" style="text-align:center;">No service requests found</td></tr>`;
+                    }
+
+                    data.forEach(request => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${request.requestid}</td>
+                            <td>${request.requesttype}</td>
+                            <td>${request.requestdate}</td>
+                            <td>${request.status}</td>
+                        `;
+                        table.appendChild(row);
+                    });
+                })
+                .catch(error => console.error("Error loading service requests:", error));
+        }
+
+        function addRequest() {
+            const requestType = document.getElementById("requesttype").value;
+
+            fetch('/api/citizenrequests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ citizenid: userId, requesttype: requestType })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadRequests(); // Refresh list
+            })
+            .catch(error => console.error("Error adding service request:", error));
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <button onclick="toggleSidebar()">☰</button>
+        <a id="logout" href="/">Logout</a>
+    </div>
+
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <div class="sidebar">
+        <a id="home" href="/">🏠 Home</a>
+        <a id="profile" href="/">👤 Profile</a>
+        <a id="schemes" href="/">💰 Welfare-Schemes</a>
+        <a id="services" href="/">📑 Service-Request</a>
+        <a id="agri" href="/">🌾 Agriculture-Records</a>
+    </div>
+
+    <div class="main-content">
+        <h1>My Service Requests</h1>
+
+        <h3>Applied Requests:</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Request Type</th>
+                    <th>Request Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="requestsTable"></tbody>
+        </table>
+
+        <h3>Request Another Certificate:</h3>
+        <div class="form-container">
+            <label>Select Request Type:</label>
+            <select id="requesttype">
+                <option value="Birth Certificate">Birth Certificate</option>
+                <option value="Death Certificate">Death Certificate</option>
+                <option value="Income Certificate">Income Certificate</option>
+                <option value="Marriage Certificate">Marriage Certificate</option>
+                <option value="Caste Certificate">Caste Certificate</option>
+            </select>
+            <button onclick="addRequest()">Submit Request</button>
+        </div>
+    </div>
+
+</body>
+</html>

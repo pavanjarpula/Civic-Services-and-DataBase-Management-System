@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gram Panchayat Census Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            padding: 10px;
+            justify-content: space-between;
+            position:absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1001; /* Highest priority */
+        }
+
+        .top-navbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .top-navbar button:hover {
+            background-color: #575757;
+            border-radius: 5px;
+        }
+
+        #logout {
+            background-color: red;
+            margin: 0px 20px;
+            padding: 14px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            left: -250px; /* Initially hidden */
+            top: 0;
+            padding-top: 60px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000; /* Lower than navbar but above content */
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        /* When sidebar is open */
+        .sidebar.open {
+            left: 0;
+        }
+
+        /* Overlay Effect */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 60px auto 20px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h2 {
+            font-size: 2rem;
+            margin: 5px 0;
+        }
+        
+        .stat-card p {
+            font-size: 1rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container {
+            flex-basis: 48%;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .chart-container h3 {
+            color: #444;
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 300px;
+        }
+        
+        @media (max-width: 992px) {
+            .chart-container {
+                flex-basis: 100%;
+            }
+        }
+    </style>
+    <script>
+        let employeeId;
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            employeeId = params.get("id");
+
+            if (employeeId) {
+                let id = employeeId;
+                document.getElementById("home").href = `/home?id=${id}&monitor=${true}`;
+                document.getElementById("profile").href = `/profile?id=${id}&monitor=${true}`;
+                document.getElementById("resources").href = `/resources?id=${id}&monitor=${true}`;
+                document.getElementById("census").href = `/census?id=${id}&monitor=${true}`;
+                document.getElementById("WelSch").href = `/schemes?id=${id}&monitor=${true}`;
+                document.getElementById("agri").href = `/agrirecords?id=${id}&monitor=${true}`;
+                document.getElementById("vaccinations").href = `/vaccinations?id=${id}&monitor=${true}`;
+            }
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            document.querySelector('.sidebar').classList.remove('open');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+    </script>
+</head>
+<body>
+    <div class="top-navbar">
+        <button onclick="toggleSidebar()">☰</button>
+        <a id="logout" href="/">Logout</a>
+    </div>
+
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <div class="sidebar">
+        <a id="home" href="/">🏠 Home</a>
+        <a id="profile" href="/">👤 Profile</a>
+        <a id="resources" href="/">📂 View Resources</a>
+        <a id="census" href="/">📊 Census Data</a>
+        <a id="WelSch" href="/">💰 Schemes Data</a>
+        <a id="vaccinations" href="/"> Vaccinations</a>
+        <a id="agri" href="/">🌾 Agri Data</a>
+    </div>
+    
+    <div class="container">
+        <h1>📊 Gram Panchayat Census Report</h1>
+        
+        <div class="dashboard-header">
+            <div class="stat-card">
+                <p>Total Population</p>
+                <h2 id="total-population">--</h2>
+            </div>
+            <div class="stat-card">
+                <p>Total Households</p>
+                <h2 id="total-households">--</h2>
+            </div>
+            <div class="stat-card">
+                <p>Average Household Size</p>
+                <h2 id="avg-household-size">--</h2>
+            </div>
+            <div class="stat-card">
+                <p>Average Income (₹)</p>
+                <h2 id="avg-income">--</h2>
+            </div>
+        </div>
+        
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>Population by Gender</h3>
+                <canvas id="genderChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Population Age Distribution</h3>
+                <canvas id="ageChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>Birth and Death Trends</h3>
+                <canvas id="birthDeathChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Marriage and Divorce Trends</h3>
+                <canvas id="marriageDivorceChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>Gender-Based Birth & Death Rates</h3>
+                <canvas id="genderRatesChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Household Income Distribution</h3>
+                <canvas id="incomeChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Fetch census data when page loads
+        document.addEventListener('DOMContentLoaded', fetchCensusData);
+        
+        async function fetchCensusData() {
+            try {
+                const response = await fetch('/api/censusreport');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                updateStatCards(data);
+                renderCharts(data);
+            } catch (error) {
+                console.error('Error fetching census data:', error);
+                alert('Failed to load census data. Please try again later.');
+            }
+        }
+        
+        function updateStatCards(data) {
+            document.getElementById('total-population').textContent = data.population.total;
+            document.getElementById('total-households').textContent = data.households.total;
+            document.getElementById('avg-household-size').textContent = data.households.average_size.toFixed(1);
+            document.getElementById('avg-income').textContent = data.households.average_income.toLocaleString();
+        }
+        
+        function renderCharts(data) {
+            // Population by Gender Chart
+            new Chart(document.getElementById('genderChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Male', 'Female', 'Other'],
+                    datasets: [{
+                        data: [data.population.male, data.population.female, data.population.other],
+                        backgroundColor: ['#3498db', '#e74c3c', '#2ecc71'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+            
+            // Age Distribution Chart
+            new Chart(document.getElementById('ageChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Children (0-14)', 'Youth (15-24)', 'Adults (25-59)', 'Seniors (60+)'],
+                    datasets: [{
+                        label: 'Population',
+                        data: [data.age_distribution.children, data.age_distribution.youth, 
+                               data.age_distribution.adults, data.age_distribution.seniors],
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Birth and Death Trends Chart
+            new Chart(document.getElementById('birthDeathChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: data.yearly_trends.years,
+                    datasets: [
+                        {
+                            label: 'Births',
+                            data: data.yearly_trends.births,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: 'Deaths',
+                            data: data.yearly_trends.deaths,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Marriage and Divorce Trends Chart
+            new Chart(document.getElementById('marriageDivorceChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: data.yearly_trends.years,
+                    datasets: [
+                        {
+                            label: 'Marriages',
+                            data: data.yearly_trends.marriages,
+                            borderColor: '#9b59b6',
+                            backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: 'Divorces',
+                            data: data.yearly_trends.divorces,
+                            borderColor: '#f39c12',
+                            backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Gender-Based Birth & Death Rates Chart
+            /*new Chart(document.getElementById('genderRatesChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [
+                        {
+                            label: 'Birth Rate',
+                            data: [data.gender_rates.male_birth, data.gender_rates.female_birth],
+                            backgroundColor: '#3498db'
+                        },
+                        {
+                            label: 'Death Rate',
+                            data: [data.gender_rates.male_death, data.gender_rates.female_death],
+                            backgroundColor: '#e74c3c'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Rate per 1000 population'
+                            }
+                        }
+                    }
+                }
+            });*/
+            new Chart(document.getElementById('genderRatesChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: data.gender_rates.years,
+                    datasets: [
+                        {
+                            label: 'Male Births',
+                            data: data.gender_rates.male_births,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: 'Female Births',
+                            data: data.gender_rates.female_births,
+                            borderColor: '#f39c12',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: 'Male Deaths',
+                            data: data.gender_rates.male_deaths,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: 'Female Deaths',
+                            data: data.gender_rates.female_deaths,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            // Household Income Distribution Chart
+            new Chart(document.getElementById('incomeChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: data.income_brackets.labels,
+                    datasets: [{
+                        data: data.income_brackets.counts,
+                        backgroundColor: [
+                            '#e74c3c', '#f39c12', '#2ecc71', '#3498db', '#9b59b6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

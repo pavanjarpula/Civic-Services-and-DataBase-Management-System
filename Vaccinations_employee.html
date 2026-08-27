@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Vaccinations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Top Navbar */
+        .topnavbar {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            padding: 10px;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+        }
+
+        .topnavbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .topnavbar button:hover {
+            background-color: #575757;
+            border-radius: 5px;
+        }
+
+        #logout {
+            background-color: red;
+            margin: 0px 20px;
+            padding: 14px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            left: -250px;
+            top: 0;
+            padding-top: 60px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        /* Overlay Effect */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .maincontent {
+            margin-top: 60px;
+            padding: 20px;
+        }
+
+        /* Form Styling */
+        .formcontainer {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            width: 50%;
+            margin: 20px auto;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        .deletebtn {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .deletebtn:hover {
+            background: #c82333;
+        }
+    </style>
+    <script>
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+
+            if (id) {
+                document.getElementById("home").href = `/home?id=${id}`;
+                document.getElementById("profile").href = `/profile?id=${id}`;
+                document.getElementById("certificates").href = `/servicerequests?id=${id}`;
+                document.getElementById("resources").href = `/resources?id=${id}`;
+                document.getElementById("census").href = `/census?id=${id}`;
+                document.getElementById("censusreport").href = `/censusreport?id=${id}`;
+                document.getElementById("WelSch").href = `/schemes?id=${id}`;
+                document.getElementById("vaccinations").href = `/vaccinations?id=${id}`;
+                loadVaccinations();
+            }
+        };
+
+        function loadVaccinations() {
+            fetch('/api/vaccinations')
+                .then(response => response.json())
+                .then(data => {
+                    const table = document.getElementById("vaccinationTable");
+                    table.innerHTML = ""; // Clear previous data
+
+                    data.forEach(record => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${record.id}</td>
+                            <td>${record.citizen_name}</td>
+                            <td>${record.vaccinetype}</td>
+                            <td>${record.date_administered}</td>
+                            <td><button class="deletebtn" onclick="deleteVaccination(${record.id})">Delete</button></td>
+                        `;
+                        table.appendChild(row);
+                    });
+                })
+                .catch(error => console.error("Error loading vaccinations:", error));
+        }
+
+        function addVaccination() {
+            const vaccinationData = {
+                citizenid: document.getElementById("citizenid").value,
+                vaccinetype: document.getElementById("vaccinetype").value,
+                dateadministered: document.getElementById("dateadministered").value
+            };
+
+            fetch('/api/vaccinations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(vaccinationData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadVaccinations(); // Refresh list
+            })
+            .catch(error => console.error("Error adding vaccination:", error));
+        }
+
+        function deleteVaccination(vaccinationid) {
+            fetch(`/api/vaccinations/${vaccinationid}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    loadVaccinations(); // Refresh list
+                })
+                .catch(error => console.error("Error deleting vaccination:", error));
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            document.querySelector('.sidebar').classList.remove('open');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <div class="topnavbar">
+        <button onclick="toggleSidebar()">☰</button>
+        <a id="logout" href="/">Logout</a>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a id="home" href="/">🏠 Home</a>
+        <a id="profile" href="/">👤 Profile</a>
+        <a id="certificates" href="/">📜 Sanction Certificates</a>
+        <a id="resources" href="/">📂 View Resources</a>
+        <a id="census" href="/">📊 Census Data</a>
+        <a id="censusreport" href="/"> Census Report</a>
+        <a id="WelSch" href="/">💰 Pending Schemes</a>
+        <a id="vaccinations" href="/">Vaccinations</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="maincontent">
+        <h1>Manage Vaccinations</h1>
+
+        <div class="formcontainer">
+            <form>
+                <label>Citizen ID:</label>
+                <input type="number" id="citizenid">
+                <label>Vaccine Type:</label>
+                <input type="text" id="vaccinetype">
+                <label>Date Administered:</label>
+                <input type="date" id="dateadministered">
+                <button type="button" onclick="addVaccination()">Add Vaccination</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Citizen Name</th>
+                    <th>Vaccine Type</th>
+                    <th>Date Administered</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="vaccinationTable"></tbody>
+        </table>
+    </div>
+
+</body>
+</html>

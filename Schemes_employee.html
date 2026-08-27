@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Employee Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            padding: 10px;
+            justify-content: space-between;
+            position:absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1001; /* Highest priority */
+        }
+
+        .top-navbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .top-navbar button:hover {
+            background-color: #575757;
+            border-radius: 5px;
+        }
+
+        #logout {
+            background-color: red;
+            margin: 0px 20px;
+            padding: 14px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            left: -250px; /* Initially hidden */
+            top: 0;
+            padding-top: 60px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000; /* Lower than navbar but above content */
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        /* When sidebar is open */
+        .sidebar.open {
+            left: 0;
+        }
+
+        /* Overlay Effect */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 60px;
+            padding: 20px;
+        }
+
+        .scheme-list {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+    </style>
+    <script>
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            if (id) {
+                document.getElementById("home").href = `/home?id=${id}`;
+                document.getElementById("profile").href = `/profile?id=${id}`;
+                document.getElementById("certificates").href = `/servicerequests?id=${id}`;
+                document.getElementById("resources").href = `/resources?id=${id}`;
+                document.getElementById("census").href = `/census?id=${id}`;
+                document.getElementById("censusreport").href = `/censusreport?id=${id}`;
+                document.getElementById("WelSch").href = `/schemes?id=${id}`;
+                document.getElementById("vaccinations").href = `/vaccinations?id=${id}`;
+                loadpendingSchemesapp(id);
+            }
+        };
+
+        function loadpendingSchemesapp(id) {
+            fetch("/schemes/getpendingschemes")
+            .then(response => response.json())
+            .then(data => {
+                const availableSchemes = document.getElementById("pendingSchemes");
+                availableSchemes.innerHTML = "";
+
+                if (data.length === 0) {
+                    availableSchemes.innerHTML = "<p>No pending schemes to approve.</p>";
+                    return;
+                }
+
+                // Create a form to submit selections
+                const form = document.createElement("form");
+                form.id = "schemeForm";
+
+                data.forEach(scheme => {
+                    scheme.status=false;
+                    const schemeElement = document.createElement("div");
+                    schemeElement.className = "scheme-list";
+                    schemeElement.innerHTML = `
+                        <input type="checkbox" name="Application" value="${scheme.applicationid}">
+                        <strong>${scheme.SchemeName}</strong><br>
+                        <p><b>SchemeId:</b>${scheme.schemeid}</p>
+                        <p>${scheme.Description}</p>
+                        <p><b>Eligibility:</b> ${scheme.EligibilityCriteria}</p>
+                        <p><b>Benefits:</b> ${scheme.Benefits}</p>
+                        <p><b>Department:</b> ${scheme.Department}</p>
+                        <p><b>Valid Till:</b> ${scheme.ValidTill}</p>
+                        <p><b>Citizen Id:</b> ${scheme.citizenid}</p>
+                        <b>Remarks:</b> <input type="text" name="remarks" value="${scheme.remarks}">
+                        <b>Approve:</b> <input type="checkbox" name="Approve">
+                    `;
+                    form.appendChild(schemeElement);
+                });
+                // Add Submit Button
+                const submitButton = document.createElement("button");
+                submitButton.type = "button";
+                submitButton.innerText = "Apply for Selected Schemes";
+                submitButton.onclick = function () {
+                    updateScheme(id);
+                };
+
+                form.appendChild(submitButton);
+                availableSchemes.appendChild(form);
+            })
+            .catch(error => console.error("Error loading schemes:", error));
+        }
+
+        function updateScheme(id) {
+            const updatedSchemes = [];
+            const checkboxes = document.querySelectorAll("input[name='Application']:checked");
+
+            checkboxes.forEach(checkbox => {
+                const applicationId = checkbox.value;
+                const approveCheckbox = checkbox.parentElement.querySelector("input[name='Approve']");
+                const remarksInput = checkbox.parentElement.querySelector("input[name='remarks']");
+
+                let remarks = remarksInput.value;
+                let status = false;
+                
+                if (approveCheckbox.checked) {
+                    remarks = "Approved";
+                    status = true;
+                }
+
+                updatedSchemes.push({
+                applicationid: applicationId,
+                remarks: remarks,
+                status: status
+                });
+            });
+
+            // Send updated schemes to the backend
+            fetch(`/applyschemes?id=${id}&user=${false}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({schemeids: updatedSchemes})
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Update successful:", data);
+                alert("Schemes updated successfully!");
+            })
+            .catch(error => {
+                console.error("Error updating schemes:", error);
+            });
+
+            loadpendingSchemesapp(id);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            }
+        }
+
+        function closeSidebar() {
+            document.querySelector('.sidebar').classList.remove('open');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <button onclick="toggleSidebar()">☰</button>
+        <a id="logout" href="/">Logout</a>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a id="home" href="/">🏠 Home</a>
+        <a id="profile" href="/">👤 Profile</a>
+        <a id="certificates" href="/">📜 Sanction Certificates</a>
+        <a id="resources" href="/">📂 View Resources</a>
+        <a id="census" href="/">📊 Census Data</a>
+        <a id="censusreport" href="/"> Census Report</a>
+        <a id="WelSch" href="/">💰 Pending Schemes</a>
+        <a id="vaccinations" href="/">Vaccinations</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h3>List of all pending approval Welfare Schemes</h3>
+        <div id="pendingSchemes">
+            <p>Loading schemes...</p>
+        </div>
+    </div>
+
+</body>
+</html>

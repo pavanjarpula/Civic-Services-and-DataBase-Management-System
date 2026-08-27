@@ -1,0 +1,180 @@
+erDiagram
+    %% Core Entities
+    USER {
+      int UserID PK
+      string Username
+      string Password
+      string Role "Admin/Employee/Citizen/Monitor"
+      int CitizenID FK
+    }
+    CITIZENS {
+      int CitizenID PK
+      string FullName
+      date DateOfBirth
+      string Gender
+      string ContactNumber
+      int FatherID FK
+      int MotherID FK
+      int HouseholdID FK
+      string EducationalQualification
+    }
+    EMPLOYEE {
+      int EmployeeID PK
+      int CitizenID FK
+      string Role
+    }
+    Agricultural_land{ 
+      int LandID PK
+      int CitizenID FK
+      
+      float Area
+      string Address
+    }
+    Cultivation_Record{
+      int CultivationID PK
+      int LandID FK
+      int year
+      string season
+      string CropType
+      float CultivatedArea
+      float ProductionQuantity
+    }
+    WELFARE_SCHEME {  //admin should update in website when new schemes come
+      int SchemeID PK
+      string SchemeName
+      text Description
+      string EligibilityCriteria
+      text Benefits
+      datetime LaunchDate
+      string Department
+      datetime ValidTill
+    }
+    SCHEME_APPLICATION {
+      int ApplicationID PK
+      int CitizenID FK
+      int SchemeID FK
+      datetime ApplicationDate
+      string Status
+      text Remarks
+    }
+    SERVICE_REQUESTS {
+      int RequestID PK
+      int CitizenID FK
+      string RequestType {Birth certicate,death,Income ,Marriage ,Caste} 
+      datetime RequestDate
+      string Status { "Pending", "Approved", "Rejected", "Under Process" }
+    }
+    
+    %% New Modules: Assets, Vaccinations, Census, Households
+    ASSETS {
+      int AssetID PK
+      string Type
+      string Location
+      date InstallationDate
+      string Condition
+      date LastMaintenanceDate
+    }
+    HOUSEHOLDS {
+      int HouseholdID PK
+      string Address
+      decimal Income
+      int NumberOfMembers
+      decimal PropertyValue
+    }
+    CENSUS_DATA {
+      int CensusEventID PK
+      int CitizenID FK
+      string EventType
+      date EventDate
+      text EventNotes
+    }
+    VACCINATIONS {
+      int VaccinationID PK
+      int CitizenID FK
+      string VaccineType
+      date DateAdministered
+      int DoseNumber
+      string VaccineBatch
+      string VaccinationCenter
+    }
+    
+    %% Additional Extensions
+    REPORT {
+      int ReportID PK
+      int RequestedBy FK
+      string ReportType
+      text Parameters
+      datetime GeneratedDate
+      string ReportFileLocation
+    }
+    AUDIT_LOG {
+      int LogID PK
+      int UserID FK
+      datetime Timestamp
+    }
+    HEALTH_RECORD {
+      int HealthRecordID PK
+      
+      string FacilityType
+      string FacilityName
+      int NumberOfStaff
+      string ServicesOffered
+      int NumberOfBeds
+      string ContactNumber
+      datetime DateRecorded
+    }
+    EDUCATION_RECORD {
+      int EducationRecordID PK
+      
+      string InstitutionType
+      string InstitutionName
+      int Enrollment
+      int NumberOfTeachers
+      string FacilitiesAvailable
+      datetime DateRecorded
+    }
+    FEEDBACK {
+      int FeedbackID PK
+      int CitizenID FK
+      string Subject
+      text Description
+      datetime DateSubmitted
+    }
+    Discussion_Forum{
+      int CommentID PK
+      
+      int CitizenID FK
+      datetime Timestamp
+      string description
+    }
+    
+    %% Relationships
+    PANCHAYAT ||--o{ USER : "has"
+    USER }o--|| PANCHAYAT : "belongs_to"
+    
+    PANCHAYAT ||--o{ AGRICULTURE_RECORD : "records"
+    PANCHAYAT ||--o{ HEALTH_RECORD : "records"
+    PANCHAYAT ||--o{ EDUCATION_RECORD : "records"
+    PANCHAYAT ||--|| VILLAGE_PROFILE : "has"
+    PANCHAYAT ||--o{ ASSETS : "manages"
+    
+    WELFARE_SCHEME ||--o{ SCHEME_APPLICATION : "receives"
+    CITIZENS ||--o{ SCHEME_APPLICATION : "applies_for"
+    
+    USER ||--o{ AUDIT_LOG : "triggers"
+    USER ||--o{ REPORT : "requests"
+    USER ||--o{ FEEDBACK : "submits"
+    
+    CITIZENS ||--o{ VACCINATIONS : "receives"
+    
+    HOUSEHOLDS ||--o{ CENSUS_DATA : "records events for"
+    CITIZENS ||--o{ CENSUS_DATA : "involved in"
+    HOUSEHOLDS ||--o{ CITIZEN_COMPLAINTS : "receives"
+    CITIZENS ||--o{ CITIZEN_COMPLAINTS : "raises"
+    CITIZENS ||--o{ SERVICE_REQUESTS : "initiates"
+    
+    %% Linking Citizens to Panchayat
+    PANCHAYAT ||--o{ CITIZENS : "includes"
+    
+    %% Linking Households to Citizens (head relationship)
+    CITIZENS ||--|| HOUSEHOLDS : "headed_by"

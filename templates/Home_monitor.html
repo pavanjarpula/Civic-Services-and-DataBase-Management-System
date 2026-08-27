@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Employee Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            padding: 10px;
+            justify-content: space-between;
+            position:absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1001; /* Highest priority */
+        }
+
+        .top-navbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .top-navbar button:hover {
+            background-color: #575757;
+            border-radius: 5px;
+        }
+
+        #logout {
+            background-color: red;
+            margin: 0px 20px;
+            padding: 14px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            left: -250px; /* Initially hidden */
+            top: 0;
+            padding-top: 60px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000; /* Lower than navbar but above content */
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        /* When sidebar is open */
+        .sidebar.open {
+            left: 0;
+        }
+
+        /* Overlay Effect */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 60px;
+            padding: 20px;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            if (id) {
+                document.getElementById("home").href = `/home?id=${id}&monitor=${true}`;
+                document.getElementById("profile").href = `/profile?id=${id}&monitor=${true}`;
+                document.getElementById("resources").href = `/resources?id=${id}&monitor=${true}`;
+                document.getElementById("census").href = `/census?id=${id}&monitor=${true}`;
+                document.getElementById("WelSch").href = `/schemes?id=${id}&monitor=${true}`;
+                document.getElementById("agri").href = `/agrirecords?id=${id}&monitor=${true}`;
+                document.getElementById("vaccinations").href = `/vaccinations?id=${id}&monitor=${true}`;
+            }
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            }
+        }
+
+        function closeSidebar() {
+            document.querySelector('.sidebar').classList.remove('open');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <button onclick="toggleSidebar()">☰</button>
+        <a id="logout" href="/">Logout</a>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a id="home" href="/">🏠 Home</a>
+        <a id="profile" href="/">👤 Profile</a>
+        <a id="resources" href="/">📂 View Resources</a>
+        <a id="census" href="/">📊 Census Data</a>
+        <a id="WelSch" href="/">💰 Schemes Data</a>
+        <a id="vaccinations" href="/"> Vaccinations</a>
+        <a id="agri" href="/">🌾 Agri Data</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Welcome, {{ username }}!</h1>
+        <p>You are Monitor and have access to the following data</p>
+
+        <div class="section">
+            <h2>📂 View Resources</h2>
+            <p>Access various government resources available for public services and administration.</p>
+        </div>
+
+        <div class="section">
+            <h2>📊 Census Data</h2>
+            <p>Analyze and add the latest census data for policymaking and governance.</p>
+        </div>
+        
+        <div class="section">
+            <h2>💰 Schemes Data</h2>
+            <p>Analyze the acceptance of various Welfare Schemes by public.</p>
+        </div>
+
+        <div class="section">
+            <h2> View Vaccinations</h2>
+            <p>View the data of vaccinations made until now.</p>
+        </div>
+        
+    </div>
+
+</body>
+</html>

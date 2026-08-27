@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Census Data Entry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            padding: 10px;
+            justify-content: space-between;
+            position:absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1001; /* Highest priority */
+        }
+
+        .top-navbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .top-navbar button:hover {
+            background-color: #575757;
+            border-radius: 5px;
+        }
+
+        #logout {
+            background-color: red;
+            margin: 0px 20px;
+            padding: 14px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            left: -250px; /* Initially hidden */
+            top: 0;
+            padding-top: 60px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000; /* Lower than navbar but above content */
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        /* When sidebar is open */
+        .sidebar.open {
+            left: 0;
+        }
+
+        /* Overlay Effect */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .main-content { margin-top: 60px; padding: 20px; }
+        .form-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); width: 50%; margin: 20px auto; }
+        label { font-weight: bold; display: block; margin: 10px 0 5px; }
+        select, input, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #218838; }
+    </style>
+    <script>
+        let employeeId;
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            employeeId = params.get("id");
+
+            if (employeeId) {
+                document.getElementById("home").href = `/home?id=${employeeId}`;
+                document.getElementById("profile").href = `/profile?id=${employeeId}`;
+                document.getElementById("servicerequests").href = `/servicerequests?id=${employeeId}`;
+                document.getElementById("resources").href = `/resources?id=${employeeId}`;
+                document.getElementById("census").href = `/census?id=${employeeId}`;
+                document.getElementById("censusreport").href = `/censusreport?id=${employeeId}`;
+                document.getElementById("WelSch").href = `/schemes?id=${employeeId}`;
+            }
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            document.querySelector('.sidebar').classList.remove('open');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+
+        function submitCensusData() {
+            const citizenId = document.getElementById("citizenid").value;
+            const eventType = document.getElementById("eventtype").value;
+            const eventDate = document.getElementById("eventdate").value;
+            const eventNotes = document.getElementById("eventnotes").value;
+
+            if (!citizenId || !eventType || !eventDate) {
+                alert("Please fill all required fields.");
+                return;
+            }
+
+            fetch('/api/census', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ citizenid: citizenId, eventtype: eventType, eventdate: eventDate, eventnotes: eventNotes })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById("censusForm").reset(); // Clear form after submission
+            })
+            .catch(error => console.error("Error submitting census data:", error));
+        }
+    </script>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <button onclick="toggleSidebar()">☰</button>
+        <a id="logout" href="/">Logout</a>
+    </div>
+
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <div class="sidebar">
+        <a id="home" href="/">🏠 Home</a>
+        <a id="profile" href="/">👤 Profile</a>
+        <a id="servicerequests" href="/">📑 Service Requests</a>
+        <a id="resources" href="/">📂 Manage Resources</a>
+        <a id="census" href="/">📊 Census Data</a>
+        <a id="censusreport" href="/">Census Report</a>
+        <a id="WelSch" href="/">💰 Pending Schemes</a>
+    </div>
+
+    <div class="main-content">
+        <h1>Census Data Entry</h1>
+
+        <div class="form-container">
+            <form id="censusForm">
+                <label>Citizen ID:</label>
+                <input type="number" id="citizenid" placeholder="Enter Citizen ID" required>
+
+                <label>Event Type:</label>
+                <select id="eventtype">
+                    <option value="Birth">Birth</option>
+                    <option value="Death">Death</option>
+                    <option value="Marriage">Marriage</option>
+                    <option value="Divorce">Divorce</option>
+                </select>
+
+                <label>Event Date:</label>
+                <input type="date" id="eventdate" required>
+
+                <label>Event Notes:</label>
+                <textarea id="eventnotes" rows="4" placeholder="Enter details about the event..."></textarea>
+
+                <button type="button" onclick="submitCensusData()">Submit Census Data</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
