@@ -25,6 +25,27 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+with app.app_context():
+    db.create_all()
+    # Seed data if tables are empty
+    if User.query.count() == 0:
+        import psycopg2
+        db_url = os.getenv("DATABASE_URL")
+        if db_url:
+            try:
+                conn = psycopg2.connect(db_url)
+                conn.autocommit = True
+                cursor = conn.cursor()
+                with open("create.sql", "r") as f:
+                    cursor.execute(f.read())
+                with open("insert.sql", "r") as f:
+                    cursor.execute(f.read())
+                cursor.close()
+                conn.close()
+                print("Database seeded successfully.")
+            except Exception as e:
+                print(f"Seed error: {e}")
+
 # Database Models
 class Citizen(db.Model):
     __tablename__ = 'citizens'
