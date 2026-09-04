@@ -1039,8 +1039,5 @@ def remove_employee():
 
 
 if __name__ == "__main__":
-    if os.getenv("RENDER"):
-        with app.app_context():
-            from init_db import init_database
-            init_database()
-    app.run(host="0.0.0.0", port=5173, debug=True)
+    port = int(os.getenv("PORT", 5173))
+    app.run(host="0.0.0.0", port=port, debug=True)
