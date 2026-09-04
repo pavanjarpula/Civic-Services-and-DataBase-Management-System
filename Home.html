@@ -3,104 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DBMS</title>
+    <title>Civic Services - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            box-sizing: border-box;
         }
-        .container {
-            width: 300px;
-            background: white;
-            padding: 20px;
-            margin: 50px auto;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
         }
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
         }
-        button {
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(2deg); }
+        }
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            padding: 10px;
-            background: #28a745;
+            max-width: 420px;
+            padding: 20px;
+        }
+        .brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .brand-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+        .brand h1 {
+            color: #f8fafc;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .brand p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+        .card h2 {
+            color: #f8fafc;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 10px;
+            color: #f8fafc;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .input-group input::placeholder {
+            color: #64748b;
+        }
+        .input-group input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
         }
-        button:hover {
-            background: #218838;
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
-        .switch {
-            margin-top: 10px;
-            color: blue;
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .links a {
+            color: #60a5fa;
+            font-size: 13px;
+            text-decoration: none;
             cursor: pointer;
+            transition: color 0.2s;
         }
-        .switch:hover {
+        .links a:hover {
+            color: #93c5fd;
             text-decoration: underline;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(148, 163, 184, 0.15);
+        }
+        .divider span {
+            color: #64748b;
+            font-size: 12px;
+            padding: 0 12px;
+        }
+        .hidden { display: none; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #f8fafc;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            color: #64748b;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Civic Services & Database Management System</h1>
-    <p>A comprehensive platform for managing civic services at the Panchayat level.</p>
+    <div class="login-wrapper">
+        <div class="brand">
+            <div class="brand-icon">&#9881;</div>
+            <h1>Civic Services & DBMS</h1>
+            <p>Panchayat Management System</p>
+        </div>
 
-    <!-- Login Form -->
-    <div id="login-form" class="container">
-        <h2>Login</h2>
-        <input type="text" id="login-username" placeholder="Username" required>
-        <input type="password" id="login-password" placeholder="Password" required>
-        <button onclick="login()">Login</button>
-        <p class="switch" onclick="showForgotPassword()">Forgot Password?</p>
-        <p class="switch" onclick="showSignup()">Don't have an account? Sign Up</p>
-    </div>
+        <!-- Login Form -->
+        <div id="login-form" class="card">
+            <h2>Welcome Back</h2>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="login-username" placeholder="Enter your username" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password" required>
+            </div>
+            <button class="btn-primary" onclick="login()">Sign In</button>
+            <div class="links">
+                <a onclick="showForgotPassword()">Forgot Password?</a>
+            </div>
+            <div class="divider"><span>or</span></div>
+            <div class="links">
+                <a onclick="showSignup()">Create an account</a>
+            </div>
+        </div>
 
-    <!-- Signup Form -->
-    <div id="signup-form" class="container" style="display: none;">
-        <h2>Sign Up</h2>
-        <input type="text" id="signup-name" placeholder="Full Name" required>
-        <input type="email" id="signup-google" placeholder="Google Account (Email)" required>
-        <input type="text" id="signup-phone" placeholder="Phone Number" required>
-        <input type="text" id="signup-username" placeholder="Username" required>
-        <input type="password" id="signup-password" placeholder="Password" required>
-        <button onclick="signup()">Sign Up</button>
-        <p class="switch" onclick="showLogin()">Already have an account? Login</p>
-    </div>
+        <!-- Signup Form -->
+        <div id="signup-form" class="card hidden">
+            <div class="back-link" onclick="showLogin()">&#8592; Back to Login</div>
+            <h2>Create Account</h2>
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="signup-name" placeholder="Enter your full name" required>
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="signup-google" placeholder="Enter your email" required>
+            </div>
+            <div class="input-group">
+                <label>Phone Number</label>
+                <input type="text" id="signup-phone" placeholder="Enter phone number" required>
+            </div>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="signup-username" placeholder="Choose a username" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="signup-password" placeholder="Create a password" required>
+            </div>
+            <button class="btn-primary" onclick="signup()">Create Account</button>
+            <div class="links" style="margin-top: 16px;">
+                <a onclick="showLogin()">Already have an account? Sign In</a>
+            </div>
+        </div>
 
-    <!-- Forgot Password Form -->
-    <div id="forgot-password-form" class="container" style="display: none;">
-        <h2>Forgot Password</h2>
-        <input type="text" id="forgot-username" placeholder="Enter your Username" required>
-        <button onclick="resetPassword()">Reset Password</button>
-        <p class="switch" onclick="showLogin()">Back to Login</p>
+        <!-- Forgot Password Form -->
+        <div id="forgot-password-form" class="card hidden">
+            <div class="back-link" onclick="showLogin()">&#8592; Back to Login</div>
+            <h2>Reset Password</h2>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="forgot-username" placeholder="Enter your username" required>
+            </div>
+            <button class="btn-primary" onclick="resetPassword()">Send Reset Link</button>
+            <div class="links" style="margin-top: 16px;">
+                <a onclick="showLogin()">Back to Login</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            Managed by Panchayat Raj Institution
+        </div>
     </div>
 
     <script>
         function showSignup() {
-            document.getElementById("login-form").style.display = "none";
-            document.getElementById("signup-form").style.display = "block";
-            document.getElementById("forgot-password-form").style.display = "none";
+            document.getElementById("login-form").classList.add("hidden");
+            document.getElementById("signup-form").classList.remove("hidden");
+            document.getElementById("forgot-password-form").classList.add("hidden");
         }
 
         function showLogin() {
-            document.getElementById("login-form").style.display = "block";
-            document.getElementById("signup-form").style.display = "none";
-            document.getElementById("forgot-password-form").style.display = "none";
+            document.getElementById("login-form").classList.remove("hidden");
+            document.getElementById("signup-form").classList.add("hidden");
+            document.getElementById("forgot-password-form").classList.add("hidden");
         }
 
         function showForgotPassword() {
-            document.getElementById("login-form").style.display = "none";
-            document.getElementById("signup-form").style.display = "none";
-            document.getElementById("forgot-password-form").style.display = "block";
+            document.getElementById("login-form").classList.add("hidden");
+            document.getElementById("signup-form").classList.add("hidden");
+            document.getElementById("forgot-password-form").classList.remove("hidden");
         }
 
         function login() {
@@ -112,7 +298,6 @@
                 return;
             }
 
-            // Get the IP or domain dynamically
             let serverURL = window.location.origin + "/login";
 
             fetch(serverURL, {  
@@ -127,7 +312,6 @@
             .then(data => {
                 console.log("Response Data:", data);
                 if (data.success) {
-                    alert("Login Successful!");
                     if(data.Admin){
                         window.location.href = `/admin?password=${data.password}`;
                     }
@@ -147,7 +331,6 @@
             });
         }
 
-
         function signup() {
             let name = document.getElementById("signup-name").value;
             let google = document.getElementById("signup-google").value;
@@ -161,19 +344,17 @@
             }
 
             alert("Sign up successful for " + username);
-            // Here you can send a request to Flask to store user data
         }
 
         function resetPassword() {
             let username = document.getElementById("forgot-username").value;
 
             if (username === "") {
-                alert("Please enter your username or phone number.");
+                alert("Please enter your username.");
                 return;
             }
 
             alert("A password reset link has been sent to " + username);
-            // Here you can integrate with Flask to handle password reset
         }
     </script>
 

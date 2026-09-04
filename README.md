@@ -1,6 +1,10 @@
-# Civic Services and DataBase Management System
+# Civic Services & Database Management System
 
 A comprehensive full-stack web application for managing civic services at the Panchayat (village council) level, built with Flask and PostgreSQL.
+
+### Live Server: [https://civic-services-and-database-management.onrender.com](https://civic-services-and-database-management.onrender.com)
+
+---
 
 ## Project Metrics
 
@@ -192,27 +196,28 @@ A comprehensive full-stack web application for managing civic services at the Pa
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/pavanjarpula/Civic-Services-and-DataBase-Management-System.git
    ```
 
 2. Install dependencies:
    ```bash
-   pip install flask flask-sqlalchemy psycopg2-binary
+   pip install -r requirements.txt
    ```
 
 3. Set up the PostgreSQL database:
-   ```bash
-   psql -U <username> -f create.sql
-   psql -U <username> -f insert.sql
-   ```
+   - Install PostgreSQL from [postgresql.org](https://www.postgresql.org/download/)
+   - Create database: `CREATE DATABASE civic_services;`
+   - Run schema: `psql -U postgres -d civic_services -f create.sql`
+   - Run seed data: `psql -U postgres -d civic_services -f insert.sql`
 
-4. Update database credentials in `Server.py`:
-   ```python
-   DB_USERNAME = "your_username"
-   DB_PASSWORD = "your_password"
-   DB_HOST = "localhost"
-   DB_PORT = "5432"
-   DB_NAME = "your_database"
+4. Create `.env` file with your credentials:
+   ```env
+   DB_USERNAME=postgres
+   DB_PASSWORD=your_password
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=civic_services
+   ADMIN_PASSWORD=meow@1234
    ```
 
 5. Run the application:
@@ -226,12 +231,12 @@ A comprehensive full-stack web application for managing civic services at the Pa
 
 ## Default Credentials
 
-| Role | Access |
-|------|--------|
-| Admin | Password: `meow@1234` |
-| Monitor | Via Monitor role user |
-| Employee | Via Employee role user |
-| Citizen | Via Citizen role user |
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | - | `meow@1234` |
+| Monitor | `Preetham` | `Preetham123@` |
+| Employee | `amit_admin` | `password123` |
+| Citizen | `sunita_sharma` | `motherpass1` |
 
 ---
 
