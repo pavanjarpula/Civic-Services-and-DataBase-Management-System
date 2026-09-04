@@ -148,6 +148,38 @@ class Vaccination(db.Model):
 # Initialize database on startup
 with app.app_context():
     db.create_all()
+    # Seed users if empty
+    if User.query.count() == 0:
+        # Create citizens first
+        c1 = Citizen(fullname="Ramesh Sharma", dateofbirth="1965-03-10", gender="Male", contactnumber="9876500001", educationalqualification="Graduate", job="Teacher", householdid=201)
+        c2 = Citizen(fullname="Sunita Sharma", dateofbirth="1970-07-15", gender="Female", contactnumber="9876500002", educationalqualification="Post Graduate", job="Doctor", householdid=201)
+        c3 = Citizen(fullname="Mahesh Verma", dateofbirth="1968-12-20", gender="Male", contactnumber="9876500003", educationalqualification="12th", job="Farmer", householdid=202)
+        c4 = Citizen(fullname="Anita Verma", dateofbirth="1975-06-05", gender="Female", contactnumber="9876500004", educationalqualification="Graduate", job="Housewife", householdid=202)
+        c5 = Citizen(fullname="Amit Sharma", dateofbirth="1990-05-12", gender="Male", contactnumber="9876543210", educationalqualification="Post Graduate", job="Software Engineer", householdid=201, fatherid=1, motherid=2)
+        c6 = Citizen(fullname="Priya Verma", dateofbirth="1995-08-25", gender="Female", contactnumber="9867543211", educationalqualification="Graduate", job="Bank Manager", householdid=202, fatherid=3, motherid=4)
+        c7 = Citizen(fullname="Rajesh Kumar", dateofbirth="1988-02-17", gender="Male", contactnumber="9856543222", educationalqualification="12th", job="Electrician", householdid=203)
+        c8 = Citizen(fullname="Sanya Mehta", dateofbirth="2000-11-05", gender="Female", contactnumber="9846543233", educationalqualification="PhD", job="Professor", householdid=204)
+        db.session.add_all([c1,c2,c3,c4,c5,c6,c7,c8])
+        db.session.flush()
+        # Create employees
+        e1 = Employee(citizenid=5, role="Sarpanch")
+        e2 = Employee(citizenid=6, role="Secretary")
+        e3 = Employee(citizenid=7, role="Surveyor")
+        e4 = Employee(citizenid=8, role="Health Officer")
+        db.session.add_all([e1,e2,e3,e4])
+        # Create users
+        u1 = User(username="sunita_sharma", password="motherpass1", role="Citizen", citizenid=2)
+        u2 = User(username="ramesh_sharma", password="fatherpass1", role="Citizen", citizenid=1)
+        u3 = User(username="mahesh_verma", password="fatherpass2", role="Citizen", citizenid=3)
+        u4 = User(username="anita_verma", password="motherpass2", role="Citizen", citizenid=4)
+        u5 = User(username="amit_admin", password="password123", role="Employee", citizenid=5)
+        u6 = User(username="priya_emp", password="emp456", role="Employee", citizenid=6)
+        u7 = User(username="rajesh_mon", password="mon789", role="Employee", citizenid=7)
+        u8 = User(username="sanya_citizen", password="citizen101", role="Employee", citizenid=8)
+        u9 = User(username="Preetham", password="Preetham123@", role="Monitor", citizenid=None)
+        db.session.add_all([u1,u2,u3,u4,u5,u6,u7,u8,u9])
+        db.session.commit()
+        print("Database seeded successfully!")
 
 @app.route('/')
 def login_page():
