@@ -188,17 +188,27 @@ def login_page():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    if not data or 'username' not in data or 'password' not in data:
+    if not data or 'password' not in data:
         return jsonify({'error': 'Missing username or password'}), 400
     
-    user = User.query.filter_by(username=data['username']).first()
-    if not user or user.password != data['password']:
+    username = data.get('username', '').strip()
+    password = data['password']
+    
+    # Admin login: just the password, no username needed
+    if password == password_admin and (username == '' or username.lower() == 'admin'):
+        return jsonify({'Admin': True, 'success': True, 'password': password_admin})
+    
+    if not username:
         return jsonify({'error': 'Invalid username or password'}), 401
-    if user.role == 'Admin':
-        return jsonify({'Admin': True, 'success': True,'password': password_admin})
+    
+    user = User.query.filter_by(username=username).first()
+    if not user or user.password != password:
+        return jsonify({'error': 'Invalid username or password'}), 401
+    
     if user.role == 'Monitor':
-        return jsonify({'id': user.userid, 'success': True,'Monitor':True})        
-    return jsonify({'id': user.userid, 'success': True,})
+        return jsonify({'id': user.userid, 'success': True, 'Monitor': True})
+    
+    return jsonify({'id': user.userid, 'success': True})
 
 @app.route('/home')
 def home():
