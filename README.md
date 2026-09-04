@@ -2,7 +2,16 @@
 
 A comprehensive full-stack web application for managing civic services at the Panchayat (village council) level, built with Flask and PostgreSQL.
 
-### Live Server: [https://civic-services-and-database-management.onrender.com](https://civic-services-and-database-management.onrender.com)
+## Live Demo
+
+**https://civic-services-and-database-management.onrender.com**
+
+| Role | Username | Password |
+|------|----------|----------|
+| Citizen | `sunita_sharma` | `motherpass1` |
+| Employee | `amit_admin` | `password123` |
+| Monitor | `Preetham` | `Preetham123@` |
+| Admin | *(leave blank)* | `meow@1234` |
 
 ---
 
