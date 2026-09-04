@@ -5,18 +5,22 @@ from datetime import datetime
 from sqlalchemy import func, extract, case
 from datetime import datetime, timedelta
 import calendar
-    
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 app = Flask(__name__)
-password_admin = "meow@1234"
+password_admin = os.getenv("ADMIN_PASSWORD", "meow@1234")
 
 # PostgreSQL database configuration
-DB_USERNAME = "22CS10015"
-DB_PASSWORD = "22CS10015"
-DB_HOST = "10.5.18.69"
-DB_PORT = "5432"
-DB_NAME = "22CS10015"
+DB_USERNAME = os.getenv("DB_USERNAME", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "civic_services")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL") or f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -1014,4 +1018,8 @@ def remove_employee():
 
 
 if __name__ == "__main__":
+    if os.getenv("RENDER"):
+        with app.app_context():
+            from init_db import init_database
+            init_database()
     app.run(host="0.0.0.0", port=5173, debug=True)
