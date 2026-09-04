@@ -145,26 +145,9 @@ class Vaccination(db.Model):
     vaccinetype = db.Column(db.String(255), nullable=False)
     dateadministered = db.Column(db.Date, nullable=False)
 
-# Initialize database tables and seed data
+# Initialize database on startup
 with app.app_context():
     db.create_all()
-    if User.query.count() == 0:
-        import psycopg2
-        db_url = os.getenv("DATABASE_URL")
-        if db_url:
-            try:
-                conn = psycopg2.connect(db_url)
-                conn.autocommit = True
-                cursor = conn.cursor()
-                with open("create.sql", "r") as f:
-                    cursor.execute(f.read())
-                with open("insert.sql", "r") as f:
-                    cursor.execute(f.read())
-                cursor.close()
-                conn.close()
-                print("Database seeded successfully.")
-            except Exception as e:
-                print(f"Seed error: {e}")
 
 @app.route('/')
 def login_page():
@@ -1039,5 +1022,4 @@ def remove_employee():
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5173))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=5173, debug=True)
